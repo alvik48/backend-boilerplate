@@ -1,0 +1,15 @@
+{
+  "restartable": "rs",
+  "verbose": false,
+  "quiet": true,
+  "watch": [
+    "./src",
+    "./.env",
+    "package.json"
+  ],
+  "ext": "js, ts, json",
+  "ignore": [],
+  "execMap": {
+    "js": "ts-node"
+  }
+}
