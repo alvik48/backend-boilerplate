@@ -8,10 +8,11 @@ const HOST = process.env.API_REMOTE_HOST || '127.0.0.1:3000';
 const BASE = process.env.API_REMOTE_BASE || '';
 
 const options = {
-  swagger: {
+  openapi: {
+    openapi: '3.1.0',
     info: {
-      title: 'AI Stream API',
-      description: 'Routes for interaction with AI Stream API',
+      title: 'Project API',
+      description: 'Routes for interaction with the project API',
       version,
     },
     host: HOST,
@@ -19,16 +20,19 @@ const options = {
     schemes: [SCHEME],
     tags: [
       { name: ApiTag.Admin, description: 'Admin only routes' },
+      { name: ApiTag.Files, description: 'Static files management' },
       { name: ApiTag.Utils, description: 'Utilities' },
       { name: ApiTag.Users, description: 'Users' },
     ],
     definitions: [],
-    securityDefinitions: {
-      Bearer: {
-        type: 'apiKey',
-        in: 'header',
-        name: 'Authorization',
-        description: 'Enter the token with the `Bearer ` prefix, e.g. "Bearer qwerty123"',
+    components: {
+      securitySchemes: {
+        Bearer: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'Authorization',
+          description: 'Enter the token with the `Bearer ` prefix, e.g. "Bearer qwerty123"',
+        },
       },
     },
     consumes: ['application/json'],

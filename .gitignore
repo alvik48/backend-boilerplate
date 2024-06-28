@@ -63,3 +63,4 @@ sw.*
 # Project exclude paths
 tmp/
 dist/
+public/

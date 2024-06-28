@@ -21,7 +21,7 @@ const register = async () =>
  */
 const authenticate = async (username: string, password: string) => {
   // TODO: implement the logic
-  if (username !== 'test' && password !== 'test') {
+  if (username !== 'test' || password !== 'test') {
     throw new Error(`Username and password must be equal to "test"`);
   }
 
