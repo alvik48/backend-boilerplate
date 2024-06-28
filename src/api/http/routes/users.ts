@@ -1,9 +1,9 @@
 import { FastifyInstance } from 'fastify';
 import { FromSchema } from 'json-schema-to-ts';
 
-import Users from '../../../../usecases/users';
-import { ApiTag, HttpStatus } from '../../interfaces/enums';
-import routeHandler from '../../utils/route-handler';
+import Users from '../../../usecases/users';
+import { ApiTag, HttpStatus } from '../interfaces/enums';
+import routeHandler from '../utils/route-handler';
 
 const PostBodySchema = {
   type: 'object',
@@ -38,6 +38,3 @@ export default async (fastify: FastifyInstance) => {
       }),
   );
 };
-
-export * as auth from './auth';
-export * as me from './me';
