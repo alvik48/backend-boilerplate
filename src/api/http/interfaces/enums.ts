@@ -1,5 +1,6 @@
 export enum ApiTag {
   Admin = 'Admin',
+  Files = 'Files',
   Utils = 'Utils',
   Users = 'Users',
 }

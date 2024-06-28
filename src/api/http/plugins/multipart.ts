@@ -8,6 +8,7 @@ const options = {
     fileSize: FASTIFY_BODY_LIMIT, // For multipart forms, the max file size in bytes
     files: 1, // Max number of file fields
   },
+  attachFieldsToBody: true,
 };
 
 export { options, plugin };

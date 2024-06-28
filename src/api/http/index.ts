@@ -1,21 +1,23 @@
+import { readdirSync } from 'node:fs';
+import path from 'node:path';
+
+import { ajvFilePlugin } from '@fastify/multipart';
 import Fastify, { FastifyInstance } from 'fastify';
 
 import logger from '../../utils/logger';
-import { FASTIFY_BODY_LIMIT, SWAGGER_UI_ENDPOINT } from './constants';
-import { RegisterPluginSpec, RoutesSpec } from './interfaces';
+import { FASTIFY_BODY_LIMIT, SCALAR_UI_ENDPOINT, SWAGGER_UI_ENDPOINT } from './constants';
+import { RegisterPluginSpec } from './interfaces';
 import * as auth from './plugins/auth';
 import * as cors from './plugins/cors';
 import * as multipart from './plugins/multipart';
+import * as scalar from './plugins/scalar';
 import * as staticServer from './plugins/static';
 import * as swagger from './plugins/swagger';
 import * as swaggerUI from './plugins/swagger-ui';
-import * as rawRoutes from './routes';
 
 const SCHEME = process.env.API_SCHEME || 'http';
 const HOST = process.env.API_HOST || '127.0.0.1';
 const PORT = parseInt(process.env.API_PORT || '3000');
-
-const routes = rawRoutes as RoutesSpec;
 
 /**
  * Registers fastify plugin
@@ -29,23 +31,49 @@ const registerPlugin = (fastify: FastifyInstance, { plugin, options }: RegisterP
 };
 
 /**
+ * Registers routes inside the given directory
+ * @param directory
+ * @param fastify
+ */
+const registerRoutes = async (directory: string, fastify: FastifyInstance): Promise<void> => {
+  // Read all items in the directory
+  const items = readdirSync(directory, { withFileTypes: true });
+
+  for (const item of items) {
+    const fullPath = path.join(directory, item.name);
+
+    if (item.isDirectory()) {
+      // If it's a directory, recursively import its contents
+      await registerRoutes(fullPath, fastify);
+    } else if (item.isFile() && fullPath.endsWith('.ts')) {
+      // If it's a TypeScript file, dynamically import it
+      const route = await import(fullPath);
+      fastify.register(route);
+    }
+  }
+};
+
+/**
  * Runs the HTTP API server
  */
 const startHttpAPI = async () => {
-  const fastify = Fastify({ logger: false, bodyLimit: FASTIFY_BODY_LIMIT });
+  const fastify = Fastify({
+    logger: false,
+    bodyLimit: FASTIFY_BODY_LIMIT,
+    ajv: {
+      plugins: [ajvFilePlugin],
+    },
+  });
 
   registerPlugin(fastify, auth);
   registerPlugin(fastify, cors);
   registerPlugin(fastify, multipart);
   registerPlugin(fastify, swagger);
   registerPlugin(fastify, staticServer);
+  registerPlugin(fastify, scalar);
   registerPlugin(fastify, swaggerUI);
 
-  for (const entity in routes) {
-    for (const route of Object.values(routes[entity])) {
-      fastify.register(route);
-    }
-  }
+  await registerRoutes(`${__dirname}/routes`, fastify);
 
   await fastify.listen({
     host: HOST,
@@ -53,7 +81,9 @@ const startHttpAPI = async () => {
   });
 
   logger.info(`Server has launched at ${SCHEME}://${HOST}:${PORT}`);
-  logger.info(`API docs page is accessible at ${SCHEME}://${HOST}:${PORT}${SWAGGER_UI_ENDPOINT}`);
+  logger.info(`API docs page is accessible at:`);
+  logger.info(`Swagger UI: ${SCHEME}://${HOST}:${PORT}${SWAGGER_UI_ENDPOINT}`);
+  logger.info(`Scalar UI:  ${SCHEME}://${HOST}:${PORT}${SCALAR_UI_ENDPOINT}`);
 };
 
 export default startHttpAPI;

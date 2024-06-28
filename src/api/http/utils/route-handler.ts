@@ -25,12 +25,31 @@ const parseUser = (header?: string): object | undefined => {
 };
 
 /**
+ * Parses a multipart request body and returns a string representation.
+ * @param {any} body - The multipart request body to be parsed.
+ * @returns {string} - The string representation of the parsed body.
+ */
+const parseMultipartBody = (body: any): string =>
+  Object.keys(body)
+    .map((key) => `${key}: ${body[key].value || body[key].filename || '?'}`)
+    .join(', ');
+
+/**
  * Returns stringified body params
  * @param req
  */
 const getRequestParams = (req: FastifyRequest): any => {
-  const { body } = req;
-  return body && Object.keys(body).length ? `. Body: ${JSON.stringify(body)}` : '';
+  const { headers, body } = req;
+
+  if (!body || !Object.keys(body).length) {
+    return '';
+  }
+
+  if (headers['content-type']?.includes('multipart/form-data')) {
+    return `. Multipart/form-data with keys: ${parseMultipartBody(body)}`;
+  }
+
+  return `. Body: ${JSON.stringify(body)}`;
 };
 
 /**

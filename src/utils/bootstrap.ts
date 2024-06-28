@@ -1,3 +1,14 @@
 import './dotenv';
 
-// Here you can check and validate your env variables
+import { STATIC_FILES_DIR } from '../constants/files';
+import { createDirectoryIfNotExists } from './files';
+
+/* -----------------------------------------------------------------------------
+  Environment variables check
+----------------------------------------------------------------------------- */
+
+/* -----------------------------------------------------------------------------
+  Directories creation
+----------------------------------------------------------------------------- */
+
+createDirectoryIfNotExists(STATIC_FILES_DIR);
