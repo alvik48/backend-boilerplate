@@ -1,7 +1,6 @@
 import plugin from '@fastify/swagger';
 
 import { version } from '../../../../package.json';
-import { ApiTag } from '../interfaces/enums';
 
 const SCHEME = process.env.API_REMOTE_SCHEME || 'http';
 const HOST = process.env.API_REMOTE_HOST || '127.0.0.1:3000';
@@ -18,12 +17,6 @@ const options = {
     host: HOST,
     basePath: BASE,
     schemes: [SCHEME],
-    tags: [
-      { name: ApiTag.Admin, description: 'Admin only routes' },
-      { name: ApiTag.Files, description: 'Static files management' },
-      { name: ApiTag.Utils, description: 'Utilities' },
-      { name: ApiTag.Users, description: 'Users' },
-    ],
     definitions: [],
     components: {
       securitySchemes: {

@@ -1,8 +1,8 @@
+import { STATIC_FILES_DIR } from '@constants/files';
 import plugin from '@fastify/static';
-import path from 'path';
 
 const options = {
-  root: path.join(__dirname, '../', '../', '../', 'public'),
+  root: STATIC_FILES_DIR,
   prefix: '/public/',
 };
 

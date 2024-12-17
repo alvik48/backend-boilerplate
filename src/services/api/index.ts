@@ -2,13 +2,14 @@ import { readdirSync } from 'node:fs';
 import path from 'node:path';
 
 import { ajvFilePlugin } from '@fastify/multipart';
+import { onRequest, onResponse } from '@services/api/utils/hooks';
+import logger from '@utils/logger';
 import Fastify, { FastifyInstance } from 'fastify';
 
-import logger from '../../utils/logger';
 import { FASTIFY_BODY_LIMIT, SCALAR_UI_ENDPOINT, SWAGGER_UI_ENDPOINT } from './constants';
 import { RegisterPluginSpec } from './interfaces';
-import * as auth from './plugins/auth';
 import * as cors from './plugins/cors';
+import * as jwt from './plugins/jwt';
 import * as multipart from './plugins/multipart';
 import * as scalar from './plugins/scalar';
 import * as staticServer from './plugins/static';
@@ -65,13 +66,16 @@ const startHttpAPI = async () => {
     },
   });
 
-  registerPlugin(fastify, auth);
   registerPlugin(fastify, cors);
+  registerPlugin(fastify, jwt);
   registerPlugin(fastify, multipart);
   registerPlugin(fastify, swagger);
   registerPlugin(fastify, staticServer);
   registerPlugin(fastify, scalar);
   registerPlugin(fastify, swaggerUI);
+
+  fastify.addHook('onRequest', onRequest);
+  fastify.addHook('onResponse', onResponse);
 
   await registerRoutes(`${__dirname}/routes`, fastify);
 
