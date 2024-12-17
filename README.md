@@ -23,27 +23,31 @@ Description of how to launch all the processes.
 
 Each process described here should have an `npm run` launch command.
 
-## Recommended folder structure
+## Folder structure
 
 ```
 ├── .github/              - actions and workflows
 ├── .husky/               - pre-commit hooks
+├── dist/                 - [ignored] compiled code (if needed)
 ├── kubernetes/           - kubernetes configs
 ├── src/
-│   ├── api/              - if you have an API server
 │   ├── constants/        - top-level constants
 │   ├── db/
-│   │   ├── prisma/       - prisma migrations
+│   │   ├── migrations/   - Prisma migrations
 │   │   ├── repositories/ - database interaction layer
+│   │   ├── index.ts      - export of Prisma models and utilities
 │   │   ├── schema.prisma - database schema
 │   ├── interfaces/       - top-level interfaces and types
-│   ├── jobs/             - "work-and-die" scripts
 │   ├── libs/             - common libraries
+│   ├── services/         - project services
+│   │   ├── service1/
+│   │   ├── service2/
+│   │   ├── service3/
 │   ├── usecases/         - recurring patterns of interaction with repositories
-│   ├── utils/            - helpers, libraries instances and so on
-│   ├── workers/          - constantly running scripts
-├── dist/                 - [ignored] compiled code (if needed)
-├── tests/                - tests scripts
+│   ├── utils/            - helpers, libraries instances and other utilities
+├── static/               - [ignored] static files
+│   ├── public/           - publicly accessible files
+├── tests/                - test scripts
 ├── tmp/                  - [ignored] any temporary/test code or files
 ├── .gitignore
 ├── .env                  - [ignored] global app env variables
