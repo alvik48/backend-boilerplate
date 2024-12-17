@@ -8,12 +8,16 @@
     "es6": true,
     "node": true
   },
+  "globals": {
+    "NodeJS": "readonly"
+  },
   "extends": ["airbnb-base", "airbnb-typescript/base", "prettier", "plugin:jsdoc/recommended-error"],
   "plugins": ["@typescript-eslint", "jsdoc", "node", "simple-import-sort", "prettier"],
   "rules": {
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/ban-ts-comment": "off",
     "array-bracket-spacing": ["error", "never"],
+    "class-methods-use-this": 0,
     "comma-dangle": ["error", "always-multiline"],
     "func-style": ["error", "expression"],
     "guard-for-in": 0,
@@ -47,7 +51,8 @@
         "ignore": [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 60, 64, 100, 1000, 60000],
         "ignoreArrayIndexes": true,
         "ignoreDefaultValues": true,
-        "ignoreClassFieldInitialValues": true
+        "ignoreClassFieldInitialValues": true,
+        "detectObjects": false
       }
     ],
     "no-multi-assign": "error",
@@ -59,6 +64,7 @@
     "no-undef": "error",
     "no-unused-vars": "error",
     "no-use-before-define": "error",
+    "no-useless-escape": 0,
     "object-curly-spacing": ["error", "always"],
     "one-var": ["error", "never"],
     "padded-blocks": 0,

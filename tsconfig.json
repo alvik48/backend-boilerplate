@@ -10,6 +10,7 @@
     "allowJs": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
+    "baseUrl": "./",
     "declaration": true,
     "declarationMap": true,
     "esModuleInterop": true,
@@ -21,11 +22,24 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "outDir": "./dist",
+    "paths": {
+      "@static/*": ["static/*"],
+      "@src/*": ["src/*"],
+      "@constants/*": ["src/constants/*"],
+      "@db/*": ["src/db/*"],
+      "@repositories/*": ["src/db/repositories/*"],
+      "@interfaces/*": ["src/interfaces/*"],
+      "@libs/*": ["src/libs/*"],
+      "@services/*": ["src/services/*"],
+      "@usecases/*": ["src/usecases/*"],
+      "@utils/*": ["src/utils/*"],
+    },
     "pretty": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "es2020",
+    "types": ["node"]
   }
 }
