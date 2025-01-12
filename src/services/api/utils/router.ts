@@ -1,6 +1,7 @@
 import KnownError from '@libs/error';
 import { DEFAULT_ERRORS_SCHEMA } from '@services/api/constants';
 import { ApiTag, HttpStatus } from '@services/api/interfaces/enums';
+import { UserSafeSpec } from '@src/db';
 import logger from '@utils/logger';
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { FromSchema } from 'json-schema-to-ts';
@@ -69,19 +70,19 @@ const enrichSchema = (schema: any, isMultipart: boolean = false): any => {
 };
 
 /**
- * Creates a new API route for a Fastify instance with defined configurations and schema validations.
- * @template TSchema - A schema object defining the shape of the request and response, including body, params, querystring, headers, and response formats.
- * @param {object} params - The parameters to define and configure the route.
- * @param {FastifyInstance} params.fastify - The Fastify instance on which the route will be registered.
- * @param {'get' | 'post' | 'patch' | 'put' | 'delete'} params.method - The HTTP method for the route.
- * @param {string} params.endpoint - The API endpoint path for the route.
- * @param {string} [params.description] - An optional description of the route for documentation purposes.
- * @param {ApiTag[]} [params.tags] - An optional array of tags for categorization in API documentation.
- * @param {TSchema} params.schema - The schema object to validate the request and response data.
- * @param {boolean} [params.auth] - A flag indicating whether authentication is required for the route.
- * @param {boolean} [params.multipart] - A flag indicating whether the route supports multipart/form-data requests.
- * @param {Function} params.handler - The handler function that processes the request and sends the response. Receives `request` and `reply` as arguments, and must return a Promise.
- * @throws Will return a 500 server error with an error message if the handler encounters an unexpected issue.
+ * Creates a route in a Fastify application with specified configurations, including method, endpoint, schema, authentication, and more.
+ * @template TSchema Extends a partial object containing specific request and response schema properties such as `body`, `params`, `querystring`, `headers`, and `response`.
+ * @template A A boolean value indicating whether authentication is required for the route or not.
+ * @param {object} params - Configuration parameters for setting up the route.
+ * @param {FastifyInstance} params.fastify - Instance of the Fastify application where the route will be registered.
+ * @param {'get' | 'post' | 'patch' | 'put' | 'delete'} params.method - HTTP method type for the route (e.g., GET, POST, PATCH).
+ * @param {string} params.endpoint - Endpoint path for the route.
+ * @param {string} [params.description] - Optional description of the route for documentation purposes.
+ * @param {ApiTag[]} [params.tags] - Optional array of API tags categorizing the route for Swagger or other documentation tools.
+ * @param {TSchema} params.schema - Schema definition for the route's `body`, `params`, `querystring`, `headers`, and `response`.
+ * @param {A} [params.auth] - Boolean indicating whether the route requires user authentication (`true`) or not (`false`).
+ * @param {boolean} [params.multipart] - Indicates if the route supports `multipart/form-data` for file uploads.
+ * @param {Function} params.handler - Asynchronous handler function that processes the request and reply objects. The `request` object includes parsed inputs based on the provided schema, and the `reply` object is used to craft responses.
  */
 const createRoute = <
   TSchema extends Partial<{
@@ -91,6 +92,7 @@ const createRoute = <
     headers: Record<string, any>;
     response: Record<string, any>;
   }>,
+  A extends boolean,
 >(params: {
   fastify: FastifyInstance;
   method: 'get' | 'post' | 'patch' | 'put' | 'delete';
@@ -98,16 +100,21 @@ const createRoute = <
   description?: string;
   tags?: ApiTag[];
   schema: TSchema;
-  auth?: boolean;
+  auth?: A;
   multipart?: boolean;
   handler: (
-    request: FastifyRequest<{
-      Body: TSchema['body'] extends Record<string, any> ? FromSchema<TSchema['body']> : undefined;
-      Params: TSchema['params'] extends Record<string, any> ? FromSchema<TSchema['params']> : undefined;
-      Querystring: TSchema['querystring'] extends Record<string, any> ? FromSchema<TSchema['querystring']> : undefined;
-      Headers: TSchema['headers'] extends Record<string, any> ? FromSchema<TSchema['headers']> : undefined;
-      Response: TSchema['response'] extends Record<string, any> ? FromSchema<TSchema['response']> : undefined;
-    }>,
+    request: Omit<
+      FastifyRequest<{
+        Body: TSchema['body'] extends Record<string, any> ? FromSchema<TSchema['body']> : undefined;
+        Params: TSchema['params'] extends Record<string, any> ? FromSchema<TSchema['params']> : undefined;
+        Querystring: TSchema['querystring'] extends Record<string, any>
+          ? FromSchema<TSchema['querystring']>
+          : undefined;
+        Headers: TSchema['headers'] extends Record<string, any> ? FromSchema<TSchema['headers']> : undefined;
+        Response: TSchema['response'] extends Record<string, any> ? FromSchema<TSchema['response']> : undefined;
+      }>,
+      'user'
+    > & { user: A extends true ? UserSafeSpec : undefined },
     reply: FastifyReply<{
       Body: TSchema['body'] extends Record<string, any> ? FromSchema<TSchema['body']> : undefined;
       Params: TSchema['params'] extends Record<string, any> ? FromSchema<TSchema['params']> : undefined;
@@ -139,7 +146,14 @@ const createRoute = <
     },
     async (request, reply) => {
       try {
-        const data = await handler(request, reply);
+        const data = await handler(
+          {
+            ...request,
+            user: (auth ? (request.user as UserSafeSpec) : undefined) as A extends true ? UserSafeSpec : undefined,
+          },
+          reply,
+        );
+
         reply.status(HttpStatus.OK).send(data);
       } catch (error) {
         if (error instanceof KnownError) {

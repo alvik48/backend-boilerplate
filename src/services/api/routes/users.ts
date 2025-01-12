@@ -31,9 +31,10 @@ export default (fastify: FastifyInstance): void => {
         200: {
           type: 'object',
           properties: {
+            id: { type: 'number' },
             username: { type: 'string' },
           },
-          required: ['username'],
+          required: ['id', 'username'],
         },
       } as const,
     },
@@ -54,14 +55,15 @@ export default (fastify: FastifyInstance): void => {
         200: {
           type: 'object',
           properties: {
+            id: { type: 'number' },
             username: { type: 'string' },
           },
-          required: ['username'],
+          required: ['id', 'username'],
         },
       } as const,
     },
     async handler(request) {
-      return Users.getById((request.user as any).id);
+      return Users.getById(request.user.id);
     },
   });
 };
