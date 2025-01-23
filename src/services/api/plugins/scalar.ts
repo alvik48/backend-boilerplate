@@ -3,7 +3,7 @@ import plugin, { FastifyApiReferenceOptions } from '@scalar/fastify-api-referenc
 import { SCALAR_UI_ENDPOINT } from '../constants';
 
 const options: FastifyApiReferenceOptions = {
-  routePrefix: SCALAR_UI_ENDPOINT,
+  routePrefix: SCALAR_UI_ENDPOINT as `/${string}`,
   configuration: {
     theme: 'solarized',
   },

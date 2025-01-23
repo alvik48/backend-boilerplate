@@ -1,10 +1,9 @@
 import plugin from '@fastify/swagger';
-
-import { version } from '../../../../package.json';
+import { API_REMOTE_BASE } from '@services/api/constants';
+import { version } from '@src/../package.json';
 
 const SCHEME = process.env.API_REMOTE_SCHEME || 'http';
 const HOST = process.env.API_REMOTE_HOST || '127.0.0.1:3000';
-const BASE = process.env.API_REMOTE_BASE || '';
 
 const options = {
   openapi: {
@@ -14,8 +13,12 @@ const options = {
       description: 'Routes for interaction with the project API',
       version,
     },
-    host: HOST,
-    basePath: BASE,
+    servers: [
+      {
+        url: `${SCHEME}://${HOST}${API_REMOTE_BASE}`,
+        description: 'Main REST API server',
+      },
+    ],
     schemes: [SCHEME],
     definitions: [],
     components: {
