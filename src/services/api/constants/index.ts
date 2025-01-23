@@ -1,8 +1,9 @@
 import { HttpStatus } from '@services/api/interfaces/enums';
 
+export const API_REMOTE_BASE = process.env.API_REMOTE_BASE || '';
 export const FASTIFY_BODY_LIMIT = 31457280; // 30mb
-export const SWAGGER_UI_ENDPOINT = `/docs/swagger`;
-export const SCALAR_UI_ENDPOINT = `/docs/scalar`;
+export const SWAGGER_UI_ENDPOINT = `${API_REMOTE_BASE}/docs/swagger`;
+export const SCALAR_UI_ENDPOINT = `${API_REMOTE_BASE}/docs/scalar`;
 
 export const DEFAULT_ERRORS_SCHEMA = {
   [HttpStatus.BadRequest]: {
