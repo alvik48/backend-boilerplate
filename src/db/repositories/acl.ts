@@ -1,6 +1,6 @@
 import KnownError from '@libs/error';
 import { ResourceType } from '@prisma/client';
-import { db } from '@src/db';
+import { db, TxClient } from '@src/db';
 
 /**
  * An ACLRepository class provides functionality to manage access control for users and resources.
@@ -8,14 +8,15 @@ import { db } from '@src/db';
  */
 class ACLRepository {
   /**
-   * Grants access to a user for a specific resource.
-   * @param {number} userId - The ID of the user being granted access.
-   * @param {ResourceType} resourceType - The type of the resource the user is being granted access to.
-   * @param {number} resourceId - The ID of the specific resource being accessed.
-   * @returns {Promise<void>} A promise that resolves when the access is successfully granted.
+   * Grants access to a user for a specific resource by creating an access control entry in the database.
+   * @param {number} userId - The ID of the user to whom access is being granted.
+   * @param {ResourceType} resourceType - The type of the resource to which access is being granted.
+   * @param {number} resourceId - The ID of the resource to which access is being granted.
+   * @param {TxClient} [tx] - The transaction client to use for the database operation, defaults to the global database client.
+   * @returns {Promise<void>} A promise that resolves when the access has been successfully granted.
    */
-  async grantAccess(userId: number, resourceType: ResourceType, resourceId: number): Promise<void> {
-    await db.aCL.create({
+  async grantAccess(userId: number, resourceType: ResourceType, resourceId: number, tx: TxClient = db): Promise<void> {
+    await tx.aCL.create({
       data: {
         userId,
         resourceType,
@@ -25,14 +26,15 @@ class ACLRepository {
   }
 
   /**
-   * Determines whether a user has access to a specified resource.
+   * Checks if the user has access to a specific resource.
    * @param {number} userId - The ID of the user whose access is being checked.
-   * @param {ResourceType} resourceType - The type of the resource to check access for.
-   * @param {number} resourceId - The ID of the resource to check access for.
-   * @returns {Promise<boolean>} A promise that resolves to a boolean indicating whether the user has access to the resource.
+   * @param {ResourceType} resourceType - The type of the resource being accessed.
+   * @param {number} resourceId - The ID of the resource being accessed.
+   * @param {TxClient} [tx] - The transaction client used for database operations, defaults to the global database client.
+   * @returns {Promise<boolean>} A promise that resolves to `true` if the user has access to the resource, or `false` otherwise.
    */
-  async hasAccess(userId: number, resourceType: ResourceType, resourceId: number): Promise<boolean> {
-    const entity = await db.aCL.findUnique({
+  async hasAccess(userId: number, resourceType: ResourceType, resourceId: number, tx: TxClient = db): Promise<boolean> {
+    const entity = await tx.aCL.findUnique({
       where: {
         userId_resourceType_resourceId: {
           userId,
@@ -46,14 +48,15 @@ class ACLRepository {
   }
 
   /**
-   * Checks whether a user has access to a specific resource. If access is denied, throws an error.
-   * @param {number} userId - The ID of the user whose access is being checked.
+   * Checks whether a user has access to a specific resource and throws an error if access is denied.
+   * @param {number} userId - The unique identifier of the user whose access is being checked.
    * @param {ResourceType} resourceType - The type of the resource being accessed.
-   * @param {number} resourceId - The ID of the resource being accessed.
-   * @returns {Promise<void>} Resolves if access has being granted, otherwise throws an error.
+   * @param {number} resourceId - The unique identifier of the resource being accessed.
+   * @param {TxClient} [tx] - Optional transaction client for database operations.
+   * @returns {Promise<void>} Resolves if the user has access, otherwise throws an error.
    */
-  async checkAccess(userId: number, resourceType: ResourceType, resourceId: number): Promise<void> {
-    const isAccessGranted = await this.hasAccess(userId, resourceType, resourceId);
+  async checkAccess(userId: number, resourceType: ResourceType, resourceId: number, tx: TxClient = db): Promise<void> {
+    const isAccessGranted = await this.hasAccess(userId, resourceType, resourceId, tx);
 
     if (!isAccessGranted) {
       throw new KnownError(
@@ -64,14 +67,15 @@ class ACLRepository {
   }
 
   /**
-   * Revokes access for a specific user to a particular resource.
-   * @param {number} userId - The unique identifier of the user whose access will be revoked.
-   * @param {ResourceType} resourceType - The type of resource for which access is being revoked.
-   * @param {number} resourceId - The unique identifier of the resource for which access is being revoked.
+   * Revokes access to a specific resource for a given user.
+   * @param {number} userId - The ID of the user whose access is to be revoked.
+   * @param {ResourceType} resourceType - The type of resource from which the user's access is to be revoked.
+   * @param {number} resourceId - The ID of the resource from which the user's access is to be revoked.
+   * @param {TxClient} [tx] - The database transaction client used for executing the query. Defaults to `db`.
    * @returns {Promise<void>} A promise that resolves when the access has been successfully revoked.
    */
-  async revokeAccess(userId: number, resourceType: ResourceType, resourceId: number): Promise<void> {
-    await db.aCL.delete({
+  async revokeAccess(userId: number, resourceType: ResourceType, resourceId: number, tx: TxClient = db): Promise<void> {
+    await tx.aCL.delete({
       where: {
         userId_resourceType_resourceId: {
           userId,
